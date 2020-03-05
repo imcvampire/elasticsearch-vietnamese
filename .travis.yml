@@ -4,7 +4,7 @@ services:
   - docker
 
 script:
-  - docker build -t imcvampire/elasticsearch-vietnamese:latest --build-arg ELASTICSEARCH_VERSION=7.3.1 . 
+  - docker build -t imcvampire/elasticsearch-vietnamese:latest --build-arg ELASTICSEARCH_VERSION=7.5.1 --build-arg VIETNAMESE_ANALYSIS_VERSION=1.0.0 . 
   
 deploy:
   provider: script
