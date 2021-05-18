@@ -1,9 +1,33 @@
-ARG ELASTICSEARCH_VERSION
+FROM ubuntu AS builder 
 
-FROM elasticsearch:${ELASTICSEARCH_VERSION}
+WORKDIR /app
 
-ARG ELASTICSEARCH_VERSION
-ARG VIETNAMESE_ANALYSIS_VERSION
+ARG DEBIAN_FRONTEND=noninteractive
 
-RUN elasticsearch-plugin install -b analysis-icu
-RUN elasticsearch-plugin install -b https://github.com/sun-asterisk-research/elasticsearch-analysis-vi/releases/download/v${VIETNAMESE_ANALYSIS_VERSION}/analysis-vi-${VIETNAMESE_ANALYSIS_VERSION}-es${ELASTICSEARCH_VERSION}.zip
+RUN apt-get update && apt-get install -y git cmake gcc build-essential default-jdk gawk
+
+RUN git clone https://github.com/coccoc/coccoc-tokenizer.git 
+
+WORKDIR /app/coccoc-tokenizer/build
+
+RUN cmake -DBUILD_JAVA=1 ..
+RUN make install 
+
+WORKDIR /app
+
+RUN git clone https://github.com/duydo/elasticsearch-analysis-vietnamese.git
+
+WORKDIR /app/elasticsearch-analysis-vietnamese
+
+RUN gawk -i inplace '{ gsub(/<version>7.4.0<\/version>/, "<version>7.12.1</version>") }; { print }' pom.xml
+RUN gawk -i inplace '{ gsub(/\[7\.4\.0,\)/, "7.12.1") }; { print }' pom.xml
+
+RUN apt-get install -y maven
+RUN mvn package
+
+FROM elasticsearch:7.12.1
+
+COPY --from=builder /app/elasticsearch-analysis-vietnamese/target/releases/elasticsearch-analysis-vietnamese-7.12.1.zip .
+RUN ls
+RUN bin/elasticsearch-plugin install file:///usr/share/elasticsearch/elasticsearch-analysis-vietnamese-7.12.1.zip --batch
+
