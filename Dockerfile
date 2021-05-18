@@ -30,4 +30,6 @@ FROM elasticsearch:7.12.1
 COPY --from=builder /app/elasticsearch-analysis-vietnamese/target/releases/elasticsearch-analysis-vietnamese-7.12.1.zip .
 RUN ls
 RUN bin/elasticsearch-plugin install file:///usr/share/elasticsearch/elasticsearch-analysis-vietnamese-7.12.1.zip --batch
+RUN bin/elasticsearch-plugin install analysis-icu --batch
+RUN bin/elasticsearch-plugin install repository-gcs --batch
 
