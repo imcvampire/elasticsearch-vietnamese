@@ -32,3 +32,5 @@ RUN bin/elasticsearch-plugin install file:///usr/share/elasticsearch/elasticsear
 RUN bin/elasticsearch-plugin install analysis-icu --batch
 RUN bin/elasticsearch-plugin install repository-gcs --batch
 
+COPY --from=builder /app/coccoc-tokenizer/dicts /usr/share/tokenizer/dicts
+
